@@ -114,7 +114,7 @@ def logout():
     """Handle logout of user."""
 
     do_logout()
-    
+
     flash("You have successfully logged out", "success")
     return redirect("/login")
 
@@ -211,11 +211,13 @@ def profile():
         return redirect("/")
     
     form = UserEditForm(obj=g.user)
+################ rearrange if logic ########################
+################ losing default info ########################
 
     if form.validate_on_submit():
         if not User.authenticate(g.user.username, form.password.data):
             flash("Profile update unsuccessful.", "danger")
-            return redirect("/")
+            return render_template("users/edit.html", form=form)
         g.user.username = form.username.data
         g.user.email = form.email.data
         g.user.image_url = form.image_url.data
@@ -236,6 +238,7 @@ def profile():
 def delete_user():
     """Delete user."""
 
+############## this will need CSRF protection ###############
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -308,10 +311,10 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-    ids_of_following = [user.id for user in g.user.following]
-    ids_of_following.append(g.user.id)
 
     if g.user:
+        ids_of_following = [user.id for user in g.user.following] + [g.user.id]
+        # ids_of_following.append(g.user.id)
         messages = (Message
                     .query
                     .filter(Message.user_id.in_(ids_of_following))
