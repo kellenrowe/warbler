@@ -8,6 +8,8 @@ from flask_sqlalchemy import SQLAlchemy
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
+DEFAULT_IMAGE_URL = "/static/images/default-pic.png"
+DEFAULT_HEADER_IMAGE_URL = "/static/images/warbler-hero.jpg"
 
 class Follows(db.Model):
     """Connection of a follower <-> followed_user."""
@@ -51,12 +53,12 @@ class User(db.Model):
 
     image_url = db.Column(
         db.Text,
-        default="/static/images/default-pic.png",
+        default=DEFAULT_IMAGE_URL,
     )
 
     header_image_url = db.Column(
         db.Text,
-        default="/static/images/warbler-hero.jpg"
+        default=DEFAULT_HEADER_IMAGE_URL,
     )
 
     bio = db.Column(
@@ -87,6 +89,11 @@ class User(db.Model):
         primaryjoin=(Follows.user_following_id == id),
         secondaryjoin=(Follows.user_being_followed_id == id)
     )
+
+    messages_liked = db.relationship(
+        "Message", 
+        secondary="likes",
+        backref="message_likers",)
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
@@ -171,6 +178,24 @@ class Message(db.Model):
     )
 
     user = db.relationship('User')
+
+
+class Like(db.Model):
+    """Connection of a user <-> liked message"""
+
+    __tablename__ = 'likes'
+
+    message_id = db.Column(
+        db.Integer,
+        db.ForeignKey('messages.id', ondelete="cascade"),
+        primary_key=True,
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        primary_key=True,
+    ) 
 
 
 def connect_db(app):

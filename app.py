@@ -4,8 +4,9 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm, UserEditForm
-from models import db, connect_db, User, Message
+from forms import UserAddForm, LoginForm, MessageForm, UserEditForm, LogoutForm
+from models import (db, connect_db, User, Message, DEFAULT_IMAGE_URL,
+                    DEFAULT_HEADER_IMAGE_URL)
 
 CURR_USER_KEY = "curr_user"
 
@@ -35,6 +36,7 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
+        g.logout_form = LogoutForm()
 
     else:
         g.user = None
@@ -48,7 +50,6 @@ def do_login(user):
 
 def do_logout():
     """Logout user."""
-
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
 
@@ -108,14 +109,20 @@ def login():
 
     return render_template('users/login.html', form=form)
 
-
-@app.route('/logout')
+@app.route('/logout', methods=["GET","POST"])
 def logout():
     """Handle logout of user."""
 
-    do_logout()
+    if not g.user:
+        flash("No user logged in.", "danger")
+        return redirect("/login")
 
-    flash("You have successfully logged out", "success")
+    form = LogoutForm()
+    
+    if form.validate_on_submit():
+        do_logout()
+        flash("You have successfully logged out", "success")
+    
     return redirect("/login")
 
 
@@ -209,29 +216,30 @@ def profile():
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
-    
+
     form = UserEditForm(obj=g.user)
-################ rearrange if logic ########################
-################ losing default info ########################
 
     if form.validate_on_submit():
         if not User.authenticate(g.user.username, form.password.data):
             flash("Profile update unsuccessful.", "danger")
             return render_template("users/edit.html", form=form)
+        
         g.user.username = form.username.data
         g.user.email = form.email.data
-        g.user.image_url = form.image_url.data
-        g.user.header_image_url = form.header_image_url.data
+        g.user.image_url = (form.image_url.data
+                            or DEFAULT_IMAGE_URL)
+        g.user.header_image_url = (form.header_image_url.data
+                                   or DEFAULT_HEADER_IMAGE_URL)
         g.user.bio = form.bio.data
         g.user.location = form.location.data
 
         db.session.commit()
         flash(f"{g.user.username}'s information has been successfully updated",
               "success")
+              
         return redirect(f"/users/{g.user.id}")
     else:
         return render_template("users/edit.html", form=form)
-        
 
 
 @app.route('/users/delete', methods=["POST"])

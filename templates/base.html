@@ -57,7 +57,10 @@
           </a>
         </li>
         <li><a href="/messages/new">New Message</a></li>
-        <li><a href="/logout">Log out</a></li>
+        <li>
+          <form action="/logout" method="POST"><button>Log out</button>
+            {{ g.logout_form.hidden_tag() }}</form>
+        </li>
       {% endif %}
 
     </ul>

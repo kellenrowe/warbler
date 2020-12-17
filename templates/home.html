@@ -56,7 +56,11 @@
               <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
               <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
               <p class="text-break">{{ msg.text }}</p>
+              {% if msg.user_id != g.user.id %}
+                <p class="mb-0"><i class="fas fa-thumbs-up"></i></p>
+              {% endif %}
             </div>
+
           </li>
         {% endfor %}
       </ul>
