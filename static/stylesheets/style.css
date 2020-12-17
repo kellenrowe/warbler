@@ -178,6 +178,8 @@ nav + .container {
   z-index: 1;
   position: relative;
   box-shadow: 0 1px 1px rgba(136, 153, 166, 0.15);
+  object-fit: cover;
+  object-position: 50% 50%;
 }
 
 .timeline-image {
@@ -185,11 +187,15 @@ nav + .container {
   height: 48px;
   width: 48px;
   margin-top: 2px;
+  object-fit: cover;
+  object-position: 50% 50%;
 }
 
 .message-area,
 .timeline-image {
   display: inline-block;
+  object-fit: cover;
+  object-position: 50% 50%;
 }
 
 .message-area {
