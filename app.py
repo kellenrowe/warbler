@@ -4,8 +4,9 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm, UserEditForm, LogoutForm
-from models import (db, connect_db, User, Message, DEFAULT_IMAGE_URL,
+from forms import (UserAddForm, LoginForm, MessageForm, UserEditForm,
+                   LogoutForm, LikeMessageForm)
+from models import (db, connect_db, User, Message, Like, DEFAULT_IMAGE_URL,
                     DEFAULT_HEADER_IMAGE_URL)
 
 CURR_USER_KEY = "curr_user"
@@ -37,6 +38,7 @@ def add_user_to_g():
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
         g.logout_form = LogoutForm()
+        g.like_form = LikeMessageForm()
 
     else:
         g.user = None
@@ -109,7 +111,8 @@ def login():
 
     return render_template('users/login.html', form=form)
 
-@app.route('/logout', methods=["GET","POST"])
+
+@app.route('/logout', methods=["GET", "POST"])
 def logout():
     """Handle logout of user."""
 
@@ -118,11 +121,11 @@ def logout():
         return redirect("/login")
 
     form = LogoutForm()
-    
+
     if form.validate_on_submit():
         do_logout()
         flash("You have successfully logged out", "success")
-    
+
     return redirect("/login")
 
 
@@ -223,7 +226,7 @@ def profile():
         if not User.authenticate(g.user.username, form.password.data):
             flash("Profile update unsuccessful.", "danger")
             return render_template("users/edit.html", form=form)
-        
+
         g.user.username = form.username.data
         g.user.email = form.email.data
         g.user.image_url = (form.image_url.data
@@ -236,7 +239,7 @@ def profile():
         db.session.commit()
         flash(f"{g.user.username}'s information has been successfully updated",
               "success")
-              
+
         return redirect(f"/users/{g.user.id}")
     else:
         return render_template("users/edit.html", form=form)
@@ -306,6 +309,31 @@ def messages_destroy(message_id):
     db.session.commit()
 
     return redirect(f"/users/{g.user.id}")
+
+
+@app.route('/messages/<int:message_id>/like', methods=['POST'])
+def messages_like_toggle(message_id):
+    """Like/unlike a message."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    form = LikeMessageForm()
+
+    if form.validate_on_submit():
+        like = Like.query.filter_by(message_id=message_id,
+                                    user_id=g.user.id).first()
+
+        if like:
+            db.session.delete(like)
+        else:
+            new_like = Like(message_id=message_id, user_id=g.user.id)
+            db.session.add(new_like)
+
+        db.session.commit()
+
+    return render_template('home.html')
 
 
 ##############################################################################

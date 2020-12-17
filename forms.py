@@ -38,4 +38,8 @@ class LoginForm(FlaskForm):
 
 
 class LogoutForm(FlaskForm):
-    """Delete form -- this form is intentionally blank."""
+    """Logout form -- this form is intentionally blank."""
+
+
+class LikeMessageForm(FlaskForm):
+    """Like Message form -- this form is intentionally blank."""
