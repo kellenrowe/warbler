@@ -18,8 +18,9 @@ class Follows(db.Model):
 
     user_being_followed_id = db.Column(
         db.Integer,
-        db.ForeignKey('users.id', ondelete="cascade"),
-        primary_key=True,
+        db.ForeignKey('users.id', 
+                      ondelete="cascade"),
+                      primary_key=True,
     )
 
     user_following_id = db.Column(

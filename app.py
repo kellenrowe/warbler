@@ -6,7 +6,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import (UserAddForm, LoginForm, MessageForm, UserEditForm,
-                   LogoutForm, LikeMessageForm)
+                   LogoutForm, LikeMessageForm, DeleteUserForm)
 from models import (db, connect_db, User, Message, Like, DEFAULT_IMAGE_URL,
                     DEFAULT_HEADER_IMAGE_URL)
 
@@ -40,6 +40,7 @@ def add_user_to_g():
         g.user = User.query.get(session[CURR_USER_KEY])
         g.logout_form = LogoutForm()
         g.like_form = LikeMessageForm()
+        g.delete_user_form = DeleteUserForm()
 
     else:
         g.user = None
@@ -82,7 +83,7 @@ def signup():
             db.session.commit()
 
         except IntegrityError:
-            flash("Username already taken", 'danger')
+            flash("Username/Email already taken", 'danger')
             return render_template('users/signup.html', form=form)
 
         do_login(user)
@@ -121,9 +122,7 @@ def logout():
         flash("No user logged in.", "danger")
         return redirect("/login")
 
-    form = LogoutForm()
-
-    if form.validate_on_submit():
+    if g.logout_form.validate_on_submit():
         do_logout()
         flash("You have successfully logged out", "success")
 
@@ -196,6 +195,7 @@ def add_follow(follow_id):
     db.session.commit()
 
     # return redirect(f"/users/{g.user.id}/following")
+    ####### request.referrer puts every reload in the history #######
     return redirect(request.referrer)
 
 
@@ -212,8 +212,19 @@ def stop_following(follow_id):
     db.session.commit()
 
     # return redirect(f"/users/{g.user.id}/following")
+    ####### request.referrer puts every reload in the history #######
+
     return redirect(request.referrer)
-    
+
+
+@app.route('/users/<int:user_id>/likes')
+def show_liked_warbles(user_id):
+    """ renders page which lists all warbles liked by user """
+
+    user = User.query.get_or_404(user_id)
+
+    return render_template("users/likes.html", user=user)
+
 
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
@@ -252,15 +263,16 @@ def profile():
 def delete_user():
     """Delete user."""
 
-############## this will need CSRF protection ###############
+
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    do_logout()
+    if g.delete_user_form.validate_on_submit():
+        do_logout()
 
-    db.session.delete(g.user)
-    db.session.commit()
+        db.session.delete(g.user)
+        db.session.commit()
 
     return redirect("/signup")
 
@@ -322,9 +334,7 @@ def messages_like_toggle(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    form = LikeMessageForm()
-
-    if form.validate_on_submit():
+    if g.like_form.validate_on_submit():
         like = Like.query.filter_by(message_id=message_id,
                                     user_id=g.user.id).first()
 
@@ -336,6 +346,7 @@ def messages_like_toggle(message_id):
 
         db.session.commit()
 
+    ####### request.referrer puts every reload in the history #######
     return redirect(request.referrer)
 
 

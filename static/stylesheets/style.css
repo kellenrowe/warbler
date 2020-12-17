@@ -480,6 +480,17 @@ p.card-bio {
   padding: 12px;
 }
 
+#logoutBtn {
+  font-size: 13px;
+  font-weight: 700;
+  color: #66757f;
+  padding-left: 0;
+}
+
+#logoutBtn:hover {
+  color: #18a6f2;
+}
+
 /* =========================== Edit Page */
 
 .edit-btn-area {
