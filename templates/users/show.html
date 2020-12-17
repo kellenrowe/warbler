@@ -18,6 +18,18 @@
               {{ message.timestamp.strftime('%d %B %Y') }}
             </span>
             <p class="text-break">{{ message.text }}</p>
+            {% if message.user_id != g.user.id %}
+              <form method="POST" action="/messages/{{ message.id }}/like">
+                  <button class="btn like-button">
+                    {% if message in g.user.messages_liked %}
+                      <i class="fas fa-thumbs-up liked-message"></i>
+                    {% else %}
+                      <i class="far fa-thumbs-up"></i>
+                    {% endif %}
+                  </button>
+                {{ g.like_form.hidden_tag() }}
+              </form>
+            {% endif %}
           </div>
         </li>
 

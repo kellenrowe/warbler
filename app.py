@@ -1,6 +1,7 @@
 import os
 
-from flask import Flask, render_template, request, flash, redirect, session, g
+from flask import (Flask, render_template, request,
+                   flash, redirect, session, g)
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
@@ -25,7 +26,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
-# db.create_all()
+db.create_all()
 
 ##############################################################################
 # User signup/login/logout
@@ -194,7 +195,8 @@ def add_follow(follow_id):
     g.user.following.append(followed_user)
     db.session.commit()
 
-    return redirect(f"/users/{g.user.id}/following")
+    # return redirect(f"/users/{g.user.id}/following")
+    return redirect(request.referrer)
 
 
 @app.route('/users/stop-following/<int:follow_id>', methods=['POST'])
@@ -209,8 +211,9 @@ def stop_following(follow_id):
     g.user.following.remove(followed_user)
     db.session.commit()
 
-    return redirect(f"/users/{g.user.id}/following")
-
+    # return redirect(f"/users/{g.user.id}/following")
+    return redirect(request.referrer)
+    
 
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
@@ -333,7 +336,7 @@ def messages_like_toggle(message_id):
 
         db.session.commit()
 
-    return render_template('home.html')
+    return redirect(request.referrer)
 
 
 ##############################################################################
