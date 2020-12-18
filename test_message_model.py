@@ -54,15 +54,16 @@ class MessageModelTestCase(TestCase):
 
         self.assertEqual(len(self.user1.messages), 1)
     
-    # def test_failed_message_creation_length(self):
-    #     """ fail to create message because of length exeding 140 characters """
+    def test_failed_message_creation_length(self):
+        """ fail to create message because of length exeding 140 characters """
 
-    #     with self.assertRaises(exc.DataError or exc.InvalidRequestError):
-    #         message = Message(user_id=self.user1.id, 
-    #                         text="Testing, testing, 123. Testing, testing, 123. Testing, testing, 123. Testing, testing, 123. Testing, testing, 123. Testing, testing, 123. Testing, testing, 123. Testing, testing, 123. Testing, testing, 123. Testing, testing, 123. Testing, testing, 123. Testing, testing, 123.")
+        with self.assertRaises(exc.DataError or exc.InvalidRequestError):
+            message = Message(user_id=self.user1.id, 
+                            text="Testing"*100)
 
-    #         db.session.add(message)
-    #         db.session.commit()
+            db.session.add(message)
+            db.session.commit()
 
-    #     self.assertEqual(len(self.user1.messages), 0)
+        db.session.rollback()
+        self.assertEqual(len(self.user1.messages), 0)
 

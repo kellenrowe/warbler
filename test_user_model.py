@@ -34,10 +34,16 @@ class UserModelTestCase(TestCase):
         db.drop_all()
         db.create_all()
 
+        #TODO: make passwords different as well
         # add user data
-        user1 = User.signup("user1", "user1@user1.com", "password", None)
-        user2 = User.signup("user2", "user2@user2.com",
-                            "password", USER_IMG_URL)
+        user1 = User.signup("user1",
+                            "user1@user1.com",
+                            "password",
+                            None)
+        user2 = User.signup("user2",
+                            "user2@user2.com",
+                            "password",
+                            USER_IMG_URL)
 
         db.session.add(user1)
         db.session.add(user2)
@@ -179,18 +185,18 @@ class UserModelTestCase(TestCase):
         db.session.commit()
 
         self.assertTrue(self.user1.is_following(self.user2))
-    
+
     def test_is_not_following(self):
         """ successfully detects when user1 is NOT following user2 """
         self.assertFalse(self.user1.is_following(self.user2))
-    
+
     def test_is_followed_by(self):
         """ successfully detects when user1 is FOLLOWED by user2 """
         self.user2.following.append(self.user1)
         db.session.commit()
 
         self.assertTrue(self.user1.is_followed_by(self.user2))
-    
+
     def test_is_not_followed_by(self):
         """ successfully detects when user1 is NOT followed by user2 """
         # check that is_followed status is false
@@ -199,8 +205,8 @@ class UserModelTestCase(TestCase):
     def test_authenticate_success(self):
         """ successfully returns user when given valid username & pw """
         self.assertEqual(User.authenticate
-                        (self.user1.username, 'password'), self.user1)
-    
+                         (self.user1.username, 'password'), self.user1)
+
     def test_authenticate_fail_by_username(self):
         """ returns false when bad USERNAME is passed to @authenticate class
             method. 
@@ -212,4 +218,3 @@ class UserModelTestCase(TestCase):
             method. 
         """
         self.assertFalse(User.authenticate(self.user1.username, 'passw0rd'))
-
