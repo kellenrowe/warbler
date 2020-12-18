@@ -20,11 +20,12 @@
             <p class="text-break">{{ message.text }}</p>
             {% if message.user_id != g.user.id %}
               <form method="POST" action="/messages/{{ message.id }}/like">
+                  <!-- <input type="text" name="goto" value="{{request.current_page}}"> -->
                   <button class="btn like-button">
                     {% if message in g.user.messages_liked %}
-                      <i class="fas fa-thumbs-up liked-message"></i>
+                      <i class="fa-thumbs-up fas liked-message"></i>
                     {% else %}
-                      <i class="far fa-thumbs-up"></i>
+                      <i class="fa-thumbs-up far"></i>
                     {% endif %}
                   </button>
                 {{ g.like_form.hidden_tag() }}

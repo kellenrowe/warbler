@@ -330,13 +330,16 @@ def messages_destroy(message_id):
 def messages_like_toggle(message_id):
     """Like/unlike a message."""
 
+    #TODO: think about splitting this into two routes - one that likes,
+    # one that unlikes. Would provide more flexibility.
+
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     if g.like_form.validate_on_submit():
         like = Like.query.filter_by(message_id=message_id,
-                                    user_id=g.user.id).first()
+                                    user_id=g.user.id).one_or_none()
 
         if like:
             db.session.delete(like)
@@ -347,6 +350,7 @@ def messages_like_toggle(message_id):
         db.session.commit()
 
     ####### request.referrer puts every reload in the history #######
+    # when using request.referrer have a fall back (e.g. homepage)
     return redirect(request.referrer)
 
 
